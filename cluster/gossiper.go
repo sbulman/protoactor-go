@@ -145,15 +145,19 @@ func (g *Gossiper) SendState() {
 		return
 	}
 
-	r, err := g.cluster.ActorSystem.Root.RequestFuture(g.pid, &SendGossipStateRequest{}, 5*time.Second).Result()
+	_, err := g.cluster.ActorSystem.Root.RequestFuture(g.pid, &SendGossipStateRequest{}, 5*time.Second).Result()
 	if err != nil {
 		plog.Warn("Gossip could not send gossip request", log.PID("PID", g.pid), log.Error(err))
 		return
 	}
 
-	if _, ok := r.(*SendGossipStateResponse); !ok {
-		plog.Error("Gossip SendState received unknown response", log.Message(r))
-	}
+	// It appears that both GossipResponse and GossipResponseAck can be the result
+	// of the above request. Not clear why at the moment, but this error is filling
+	// up logs. The system 'appears' to work. Need to investigate further.
+
+	// if _, ok := r.(*SendGossipStateResponse); !ok {
+	// 	plog.Error("Gossip SendState received unknown response", log.Message(r))
+	// }
 }
 
 // Builds a consensus handler and a consensus checker, send the checker to the
