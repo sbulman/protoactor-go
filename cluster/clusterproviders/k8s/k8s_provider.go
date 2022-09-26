@@ -97,6 +97,7 @@ func (p *Provider) init(c *cluster.Cluster) error {
 	p.host = host
 	p.port = port
 	p.address = fmt.Sprintf("%s:%d", host, port)
+	p.clusterPods = make(map[types.UID]*v1.Pod)
 	return nil
 }
 
