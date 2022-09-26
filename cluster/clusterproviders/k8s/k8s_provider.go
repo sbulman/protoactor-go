@@ -227,6 +227,7 @@ func (p *Provider) startWatchingCluster(timeout time.Duration) error {
 
 		watcher, err := p.client.CoreV1().Pods(p.retrieveNamespace()).Watch(ctx, metav1.ListOptions{LabelSelector: selector, Watch: true, TimeoutSeconds: &watchTimeoutSeconds})
 		if err != nil {
+			plog.Error("unable to watch the cluster status", log.Error(err))
 			watcherr = fmt.Errorf("unable to watch the cluster status: %w", err)
 			return
 		}
@@ -257,11 +258,16 @@ func (p *Provider) startWatchingCluster(timeout time.Duration) error {
 
 			switch event.Type {
 			case watch.Deleted:
+				plog.Debug("Pod has been deleted", log.String("pod", pod.ObjectMeta.Name))
 				delete(p.clusterPods, pod.UID)
 			case watch.Error:
 				err := apierrors.FromObject(event.Object)
 				plog.Error(err.Error(), log.Error(err))
 			default:
+				plog.Debug("Pod event has been detected",
+					log.String("pod", pod.ObjectMeta.Name),
+					log.String("event", string(event.Type)),
+				)
 				p.clusterPods[pod.UID] = pod
 			}
 
