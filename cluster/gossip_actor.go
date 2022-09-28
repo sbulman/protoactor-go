@@ -177,10 +177,6 @@ func (ga *GossipActor) sendGossipForMember(member *Member, memberStateDelta *Mem
 	future := ctx.RequestFuture(pid, &msg, ga.gossipRequestTimeout)
 
 	ctx.ReenterAfter(future, func(res interface{}, err error) {
-		if ctx.Sender() != nil {
-			ctx.Send(ctx.Sender(), &GossipResponseAck{})
-		}
-
 		if err != nil {
 			plog.Warn("sendGossipForMember failed", log.String("MemberId", member.Id), log.Error(err))
 			return
